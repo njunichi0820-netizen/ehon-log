@@ -2,7 +2,7 @@
 <html lang="ja" class="h-full bg-slate-50">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>絵本かんたん読書記録 - Ehon Log</title>
   <!-- Apple Touch Icon / Mobile Web App Meta -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,6 +20,8 @@
     body {
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      /* iOS 下部バー・セーフエリア対策 */
+      padding-bottom: calc(5rem + env(safe-area-inset-bottom));
     }
     input, textarea, select {
       user-select: text;
@@ -47,7 +49,7 @@
     }
   </style>
 </head>
-<body class="h-full text-slate-800 antialiased font-sans flex flex-col min-h-screen pb-24 sm:pb-12">
+<body class="h-full text-slate-800 antialiased font-sans flex flex-col min-h-screen">
 
   <!-- Header / Navigation Bar -->
   <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-30">
@@ -74,20 +76,23 @@
     </div>
     
     <!-- Main Navigation Tabs -->
-    <div class="bg-indigo-700/80 px-4 border-t border-indigo-500/30">
-      <div class="max-w-4xl mx-auto flex space-x-2 text-xs font-bold">
+    <div class="bg-indigo-700/80 px-4 border-t border-indigo-500/30 overflow-x-auto custom-scrollbar">
+      <div class="max-w-4xl mx-auto flex space-x-2 text-xs font-bold whitespace-nowrap">
         <button id="tab-btn-books" onclick="switchTab('books')" class="px-4 py-2 border-b-2 border-amber-300 text-amber-300 flex items-center gap-1.5 transition">
           <i class="fa-solid fa-book-open"></i> 本棚 (日付順)
         </button>
         <button id="tab-btn-stamps" onclick="switchTab('stamps')" class="px-4 py-2 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-1.5 transition">
           <i class="fa-solid fa-stamp"></i> できたよシール台紙
         </button>
+        <button id="tab-btn-janken" onclick="switchTab('janken')" class="px-4 py-2 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-gamepad"></i> じゃんけん・あそび
+        </button>
       </div>
     </div>
   </header>
 
   <!-- Reading Statistics Header Bar -->
-  <section class="bg-indigo-800 text-indigo-100 py-2.5 border-b border-indigo-900">
+  <section class="bg-indigo-800 text-indigo-100 py-2.5 border-b border-indigo-900 shrink-0">
     <div class="max-w-4xl mx-auto px-4 flex items-center justify-around text-center text-xs">
       <div>
         <p class="text-[10px] text-indigo-300 uppercase tracking-wider">今日読んだ数</p>
@@ -153,10 +158,10 @@
     </div>
   </main>
 
-  <!-- View Section 2: Reward Stamp Sheet Tab -->
+  <!-- View Section 2: Reward Stamp Sheet Tab (Cumulative Scrollable Sheets) -->
   <main id="section-stamps" class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full space-y-4 hidden">
     
-    <!-- Reader Selector for Stamp Sheet -->
+    <!-- Reader Selector & Reward Settings -->
     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
       <div class="flex items-center space-x-2 w-full sm:w-auto">
         <label class="font-bold text-xs text-slate-700 shrink-0">台紙を選ぶ:</label>
@@ -175,50 +180,106 @@
       </div>
     </div>
 
-    <!-- Stamp Sheet Display Frame -->
-    <div class="bg-gradient-to-b from-amber-50 to-orange-50 border-4 border-dashed border-amber-300 rounded-3xl p-4 sm:p-6 shadow-sm space-y-6 relative overflow-hidden">
-      
-      <div class="text-center space-y-1">
-        <span class="bg-amber-200 text-amber-900 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">Stamp Card</span>
-        <h2 id="stamp-sheet-title" class="font-extrabold text-xl sm:text-2xl text-slate-800">〇〇さんの できたよ！シール台紙</h2>
-        <p class="text-xs text-slate-600">絵本を1冊読むごとにスタンプが1つ押されるよ！10個貯めてごほうびをゲットしよう！</p>
-      </div>
-
-      <!-- 10 Stamp Grids (5 x 2 on tablet/desktop, 2 x 5 on mobile) -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 max-w-2xl mx-auto">
-        <!-- Stamp Slot 1 to 10 -->
-        <script>
-          for (let i = 1; i <= 10; i++) {
-            document.write(`
-              <div id="stamp-slot-${i}" class="bg-white/80 border-2 border-dashed border-amber-300 rounded-2xl h-24 flex flex-col items-center justify-center p-2 relative shadow-inner">
-                <span class="absolute top-1.5 left-2 font-bold text-[10px] text-amber-400">${i}</span>
-                <div class="stamp-content flex flex-col items-center">
-                  <span class="text-2xl text-slate-200 font-bold">★</span>
-                </div>
-              </div>
-            `);
-          }
-        </script>
-      </div>
-
-      <!-- Reward Ticket Box -->
-      <div id="reward-ticket-box" class="bg-white rounded-2xl border-2 border-amber-400 p-4 max-w-md mx-auto text-center space-y-2 shadow-md relative overflow-hidden">
-        <div class="text-xs font-bold text-amber-600 flex items-center justify-center gap-1">
-          <i class="fa-solid fa-gift text-base"></i> 10冊達成のごほうびチケット
-        </div>
-        <p id="reward-ticket-text" class="text-base font-extrabold text-slate-800">ごほうび未設定</p>
-        <div id="reward-status-badge" class="inline-block bg-slate-100 text-slate-500 font-bold text-[11px] px-3 py-1 rounded-full">
-          あと <span id="stamps-needed-count">10</span> 冊でゲット！
-        </div>
-      </div>
-
+    <!-- Cumulative Stamp Sheets Container (Newest Sheet Top) -->
+    <div id="stamp-sheets-container" class="space-y-6">
+      <!-- Rendered dynamically -->
     </div>
+
   </main>
 
-  <!-- Floating Mobile Action Bar -->
-  <div class="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-xs bg-slate-900/90 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center justify-around border border-white/10">
+  <!-- View Section 3: Janken & Game Tab -->
+  <main id="section-janken" class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full space-y-6 hidden">
+    
+    <!-- Janken Box -->
+    <div class="bg-white rounded-3xl border-2 border-indigo-200 p-6 shadow-sm text-center space-y-5">
+      <div class="space-y-1">
+        <span class="bg-indigo-100 text-indigo-700 font-bold text-[10px] px-3 py-1 rounded-full uppercase">Papademy Game</span>
+        <h2 class="font-black text-xl text-slate-800">🤖 パパデミーと じゃんけん勝負！</h2>
+        <p id="janken-sub-text" class="text-xs text-slate-500">「スタート」ボタンを押して勝負をはじめよう！</p>
+      </div>
+
+      <!-- Hands Display Battle Area -->
+      <div class="bg-indigo-50/70 border-2 border-dashed border-indigo-200 rounded-2xl p-5 max-w-sm mx-auto space-y-3">
+        <p id="janken-status" class="text-base font-extrabold text-indigo-900 animate-pulse">「しょうぶする？」</p>
+        
+        <div class="flex items-center justify-around">
+          <!-- User Hand -->
+          <div class="text-center space-y-1">
+            <span class="text-[10px] font-bold text-slate-500">きみ</span>
+            <div id="janken-user-hand" class="text-5xl my-1 transition-all duration-300">❓</div>
+          </div>
+          
+          <div class="text-slate-300 font-black text-xl">VS</div>
+          
+          <!-- CPU Hand -->
+          <div class="text-center space-y-1">
+            <span class="text-[10px] font-bold text-slate-500">パパデミー</span>
+            <div id="janken-cpu-hand" class="text-5xl my-1 transition-all duration-300">❓</div>
+          </div>
+        </div>
+
+        <div id="janken-result-text" class="text-base font-black text-slate-800 min-h-[28px] flex items-center justify-center"></div>
+      </div>
+
+      <!-- Action Area Dynamic Flow -->
+      <div id="janken-action-area" class="max-w-xs mx-auto min-h-[50px] flex items-center justify-center">
+        <!-- Initial Start Button -->
+        <button id="janken-start-btn" onclick="startJankenFlow()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm py-3.5 px-6 rounded-2xl shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-play"></i> じゃんけんをはじめる！
+        </button>
+
+        <!-- Hand Options (Initially hidden) -->
+        <div id="janken-hand-btns" class="hidden w-full flex justify-center items-center gap-3">
+          <button onclick="selectUserHand('✊')" class="flex-1 bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 rounded-2xl py-3 text-3xl transition active:scale-95 shadow-sm">
+            ✊
+          </button>
+          <button onclick="selectUserHand('✌️')" class="flex-1 bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 rounded-2xl py-3 text-3xl transition active:scale-95 shadow-sm">
+            ✌️
+          </button>
+          <button onclick="selectUserHand('✋')" class="flex-1 bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 rounded-2xl py-3 text-3xl transition active:scale-95 shadow-sm">
+            ✋
+          </button>
+        </div>
+      </div>
+
+      <div class="inline-block bg-slate-100 rounded-full px-4 py-1.5 text-xs font-bold text-slate-600">
+        現在の連勝きろく: <span id="janken-streak" class="text-amber-600 font-extrabold text-sm">0</span> 勝！
+      </div>
+    </div>
+
+    <!-- Reading Omikuji Extra Feature -->
+    <div class="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-3xl border-2 border-amber-200 p-6 shadow-sm text-center space-y-4">
+      <div class="space-y-1">
+        <span class="bg-amber-200 text-amber-900 font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">Papademy Omikuji</span>
+        <h3 class="font-extrabold text-lg text-slate-800">🥠 パパデミーの どくしょ超おみくじ</h3>
+        <p class="text-xs text-slate-600">きょうのうんせいと、パパデミーからの特別なメッセージをお届け！</p>
+      </div>
+
+      <button onclick="drawReadingOmikuji()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold text-xs px-6 py-3 rounded-2xl shadow-md transition active:scale-95 flex items-center justify-center gap-2 mx-auto">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> おみくじを ひく！
+      </button>
+
+      <div id="omikuji-result-box" class="hidden bg-white/95 border-2 border-amber-300 rounded-2xl p-5 max-w-md mx-auto space-y-3 shadow-md text-left transition-all duration-300">
+        <div class="text-center border-b border-amber-100 pb-2">
+          <p id="omikuji-fortune" class="text-2xl font-black text-amber-600"></p>
+          <p id="omikuji-genre" class="text-xs font-bold text-indigo-700 mt-1"></p>
+        </div>
+        <div class="bg-amber-50/60 rounded-xl p-3 border border-amber-200/50">
+          <p class="text-[10px] font-bold text-amber-800 mb-0.5"><i class="fa-solid fa-comment-dots mr-1"></i>パパデミーからのひと言アドバイス:</p>
+          <p id="omikuji-comment" class="text-xs text-slate-700 leading-relaxed font-medium"></p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Floating Mobile Action Bar (iOS bottom safety margin included) -->
+  <div class="sm:hidden fixed bottom-3 left-1/2 -translate-x-1/2 z-20 w-[92%] max-w-xs bg-slate-900/90 backdrop-blur-md text-white px-3 py-2 rounded-full shadow-2xl flex items-center justify-around border border-white/10" style="bottom: calc(0.75rem + env(safe-area-inset-bottom));">
     <button onclick="switchTab('books')" class="flex flex-col items-center text-[10px] text-slate-300 hover:text-white">
       <i class="fa-solid fa-book-open text-base mb-0.5"></i>本棚
+    </button>
+    <button onclick="switchTab('stamps')" class="flex flex-col items-center text-[10px] text-slate-300 hover:text-white">
+      <i class="fa-solid fa-stamp text-base mb-0.5"></i>台紙
     </button>
     <button onclick="openRegisterModal()" class="flex flex-col items-center text-[10px] text-amber-300 hover:text-amber-200 font-bold">
       <div class="w-10 h-10 -mt-5 bg-amber-400 text-slate-900 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-slate-900">
@@ -226,8 +287,8 @@
       </div>
       登録
     </button>
-    <button onclick="switchTab('stamps')" class="flex flex-col items-center text-[10px] text-slate-300 hover:text-white">
-      <i class="fa-solid fa-stamp text-base mb-0.5"></i>台紙
+    <button onclick="switchTab('janken')" class="flex flex-col items-center text-[10px] text-slate-300 hover:text-white">
+      <i class="fa-solid fa-gamepad text-base mb-0.5"></i>あそび
     </button>
     <button onclick="openBackupModal()" class="flex flex-col items-center text-[10px] text-slate-300 hover:text-white">
       <i class="fa-solid fa-gear text-base mb-0.5"></i>設定
@@ -406,7 +467,7 @@
     </div>
   </div>
 
-  <!-- Backup & Readers Setting Modal Container -->
+  <!-- Backup & Readers Setting Modal Container (iOS Text Copy/Paste Integrated) -->
   <div id="modal-backup" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
     <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden space-y-4 p-5 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b pb-3">
@@ -432,28 +493,48 @@
       </div>
 
       <!-- Backup Section -->
-      <div class="space-y-2 pt-1">
+      <div class="space-y-3 pt-1">
         <label class="font-bold text-xs text-slate-700 block">データバックアップ・復元</label>
         <p class="text-[11px] text-slate-500 leading-relaxed">
-          端末のデータ保存・別端末へのデータ移行にご利用いただけます。
+          iPhone・iOSアプリでのご利用時は「コピー」を使ってメモ帳等に保存・復元を行うことができます。
         </p>
 
-        <button onclick="exportDataJSON()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs py-2.5 rounded-xl border border-indigo-200 transition flex items-center justify-center gap-2">
-          <i class="fa-solid fa-download"></i> データバックアップを出力 (JSON)
-        </button>
-
-        <div class="relative">
-          <label class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl border border-slate-200 transition flex items-center justify-center gap-2 cursor-pointer">
-            <i class="fa-solid fa-upload"></i> バックアップファイルを復元
-            <input type="file" accept=".json" onchange="importDataJSON(event)" class="hidden">
-          </label>
+        <!-- Actions -->
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="exportDataJSON()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs py-2 rounded-xl border border-indigo-200 transition flex items-center justify-center gap-1">
+            <i class="fa-solid fa-download"></i> ファイル保存
+          </button>
+          <button onclick="copyDataJSONToClipboard()" class="bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs py-2 rounded-xl border border-amber-200 transition flex items-center justify-center gap-1">
+            <i class="fa-solid fa-copy"></i> テキストコピー
+          </button>
         </div>
+
+        <textarea id="backup-text-area" readonly placeholder="「テキストコピー」を押すとここにJSONが出力されます" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-[10px] font-mono h-20 focus:outline-none"></textarea>
+
+        <hr class="border-slate-100">
+
+        <!-- Import Box -->
+        <div class="space-y-2">
+          <label class="font-bold text-[11px] text-slate-700 block">バックアップから復元</label>
+          <textarea id="import-text-area" placeholder="保存したJSONテキストをここに貼り付けて「テキストから復元」を押してください" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-[10px] font-mono h-20 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="importDataFromText()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 rounded-xl transition">
+              テキストから復元
+            </button>
+            <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 rounded-xl border border-slate-200 transition flex items-center justify-center gap-1 cursor-pointer">
+              <i class="fa-solid fa-upload"></i> ファイル選択
+              <input type="file" accept=".json" onchange="importDataJSON(event)" class="hidden">
+            </label>
+          </div>
+        </div>
+
       </div>
 
       <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-[11px] text-amber-800 space-y-1">
         <p class="font-bold flex items-center gap-1"><i class="fa-solid fa-mobile-screen-button"></i> iOS端末でのホーム画面追加おすすめ</p>
         <p class="text-[10px] text-amber-700 leading-normal">
-          Safariの共有ボタン（四角から矢印のアイコン）→「ホーム画面に追加」をタップすると、アプリ感覚でワンタップで起動できるようになります。
+          Safariの共有ボタン（四角から矢印のアイコン）→「ホーム画面に追加」をタップすると、フルスクリーンで快適に利用できます。
         </p>
       </div>
     </div>
@@ -466,16 +547,21 @@
     const STORAGE_KEY = 'ehon_log_books_v1';
     const READERS_KEY = 'ehon_log_readers_v1';
     const REWARDS_KEY = 'ehon_log_rewards_v1';
+    const JANKEN_KEY  = 'ehon_log_janken_streak_v1';
 
     let booksData = [];
     let readerList = ['たろう', 'パパ', 'ママ'];
     let rewardSettings = {};
+    let jankenWinStreak = 0;
 
     let currentEditBookId = null;
     let html5QrCodeScanner = null;
     let activeFormRating = 5;
     let fetchedCandidates = [];
     let currentActiveTab = 'books';
+
+    // Janken Game Flow State
+    let isJankenInProgress = false;
 
     // Initialize application on DOM load
     window.onload = function() {
@@ -490,24 +576,30 @@
       currentActiveTab = tab;
       const booksSec = document.getElementById('section-books');
       const stampsSec = document.getElementById('section-stamps');
+      const jankenSec = document.getElementById('section-janken');
+      
       const btnBooks = document.getElementById('tab-btn-books');
       const btnStamps = document.getElementById('tab-btn-stamps');
+      const btnJanken = document.getElementById('tab-btn-janken');
+
+      // Hide all
+      [booksSec, stampsSec, jankenSec].forEach(el => el.classList.add('hidden'));
+      [btnBooks, btnStamps, btnJanken].forEach(btn => {
+        if(btn) btn.className = "px-4 py-2 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-1.5 transition";
+      });
 
       if (tab === 'books') {
         booksSec.classList.remove('hidden');
-        stampsSec.classList.add('hidden');
-        btnBooks.className = "px-4 py-2 border-b-2 border-amber-300 text-amber-300 flex items-center gap-1.5 transition";
-        btnStamps.className = "px-4 py-2 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-1.5 transition";
-      } else {
-        booksSec.classList.add('hidden');
+        if(btnBooks) btnBooks.className = "px-4 py-2 border-b-2 border-amber-300 text-amber-300 flex items-center gap-1.5 transition";
+      } else if (tab === 'stamps') {
         stampsSec.classList.remove('hidden');
-        btnStamps.className = "px-4 py-2 border-b-2 border-amber-300 text-amber-300 flex items-center gap-1.5 transition";
-        btnBooks.className = "px-4 py-2 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-1.5 transition";
+        if(btnStamps) btnStamps.className = "px-4 py-2 border-b-2 border-amber-300 text-amber-300 flex items-center gap-1.5 transition";
         renderStampSheet();
+      } else if (tab === 'janken') {
+        jankenSec.classList.remove('hidden');
+        if(btnJanken) btnJanken.className = "px-4 py-2 border-b-2 border-amber-300 text-amber-300 flex items-center gap-1.5 transition";
+        updateJankenUI();
       }
-    }
-
-    function scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -549,6 +641,11 @@
         } else {
           rewardSettings = { 'たろう': 'お好きなお菓子1個プレゼント！' };
           localStorage.setItem(REWARDS_KEY, JSON.stringify(rewardSettings));
+        }
+
+        const storedStreak = localStorage.getItem(JANKEN_KEY);
+        if (storedStreak) {
+          jankenWinStreak = parseInt(storedStreak, 10) || 0;
         }
 
       } catch (e) {
@@ -754,77 +851,128 @@
     }
 
     /* ==========================================================================
-       Stamp Sheet Logic
+       Cumulative Stamp Sheet Engine (Scrollable Multi-Sheet Layout)
        ========================================================================== */
     function renderStampSheet() {
       const select = document.getElementById('stamp-reader-select');
-      if (!select || !select.value) return;
+      const container = document.getElementById('stamp-sheets-container');
+      if (!select || !select.value || !container) return;
+
       const selectedReader = select.value;
-
-      document.getElementById('stamp-sheet-title').innerText = `${selectedReader} さんの できたよ！シール台紙`;
-
-      // Load reward setting for this reader
       const rewardInput = document.getElementById('stamp-reward-input');
-      const rewardText = document.getElementById('reward-ticket-text');
-      const curReward = rewardSettings[selectedReader] || 'ごほうび未設定';
       if (rewardInput) rewardInput.value = rewardSettings[selectedReader] || '';
-      if (rewardText) rewardText.innerText = curReward;
 
-      // Count books read by this reader
       const readerBooks = booksData.filter(b => b.readerTag === selectedReader);
-      const count = readerBooks.length;
-      const currentStampCount = count % 10;
-      const completedSets = Math.floor(count / 10);
+      const totalReadCount = readerBooks.length;
+      
+      // Calculate total sheets needed (at least 1 sheet)
+      const totalSheetsNeeded = Math.max(1, Math.ceil(totalReadCount / 10));
 
-      const needed = 10 - currentStampCount;
-      const statusBadge = document.getElementById('reward-status-badge');
+      container.innerHTML = '';
 
-      if (count > 0 && currentStampCount === 0) {
-        // Complete state
-        if (statusBadge) {
-          statusBadge.className = "inline-block bg-amber-400 text-slate-900 font-black text-xs px-3 py-1 rounded-full shadow animate-bounce";
-          statusBadge.innerHTML = `<i class="fa-solid fa-crown mr-1"></i> 10冊コンプリート！ごほうび獲得！`;
-        }
-      } else {
-        if (statusBadge) {
-          statusBadge.className = "inline-block bg-slate-100 text-slate-600 font-bold text-[11px] px-3 py-1 rounded-full";
-          statusBadge.innerHTML = `あと <span class="text-amber-600 font-bold">${needed}</span> 冊でゲット！`;
-        }
-      }
+      // Render sheets in reverse order (Newest sheet on top)
+      for (let sheetIdx = totalSheetsNeeded - 1; sheetIdx >= 0; sheetIdx--) {
+        const sheetNumber = sheetIdx + 1;
+        const startBookNum = sheetIdx * 10 + 1;
+        const endBookNum = (sheetIdx + 1) * 10;
+        const isSuperRewardSheet = (sheetNumber % 10 === 0); // Every 10th sheet (100, 200 books)
 
-      // Render 10 slots
-      for (let i = 1; i <= 10; i++) {
-        const slot = document.getElementById(`stamp-slot-${i}`);
-        if (!slot) continue;
+        const sheetCard = document.createElement('div');
+        sheetCard.className = `bg-gradient-to-b ${isSuperRewardSheet ? 'from-amber-100 to-yellow-100 border-amber-400' : 'from-amber-50 to-orange-50 border-amber-300'} border-4 border-dashed rounded-3xl p-4 sm:p-6 shadow-sm space-y-5 relative overflow-hidden`;
 
-        const isStamped = (i <= currentStampCount) || (count > 0 && currentStampCount === 0);
+        // Sheet Header
+        let headerHtml = `
+          <div class="text-center space-y-1">
+            <span class="bg-amber-200 text-amber-900 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">
+              Stamp Card #${sheetNumber}
+            </span>
+            <h2 class="font-extrabold text-lg sm:text-xl text-slate-800">
+              ${escapeHtml(selectedReader)} さんの できたよ！シール台紙 (${sheetNumber}枚目)
+            </h2>
+            <p class="text-xs text-slate-600">${startBookNum} ～ ${endBookNum} 冊目のきろく</p>
+          </div>
+        `;
 
-        if (isStamped) {
-          if (i === 10) {
-            slot.innerHTML = `
-              <span class="absolute top-1.5 left-2 font-bold text-[10px] text-amber-500">10</span>
-              <div class="animate-stamp text-center">
-                <span class="text-4xl">👑</span>
-                <p class="text-[9px] font-black text-amber-600 leading-tight">COMPLETE!</p>
-              </div>
-            `;
+        // 10 Slot Grid
+        let slotsHtml = '<div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 max-w-2xl mx-auto">';
+        
+        for (let i = 1; i <= 10; i++) {
+          const currentBookIndex = sheetIdx * 10 + i;
+          const isStamped = (currentBookIndex <= totalReadCount);
+
+          if (isStamped) {
+            if (i === 10) {
+              slotsHtml += `
+                <div class="bg-white/90 border-2 border-dashed border-amber-400 rounded-2xl h-22 sm:h-24 flex flex-col items-center justify-center p-2 relative shadow-inner">
+                  <span class="absolute top-1.5 left-2 font-bold text-[10px] text-amber-500">${currentBookIndex}</span>
+                  <div class="animate-stamp text-center">
+                    <span class="text-3xl sm:text-4xl">👑</span>
+                    <p class="text-[9px] font-black text-amber-600 leading-tight">COMPLETE!</p>
+                  </div>
+                </div>
+              `;
+            } else {
+              const icons = ['🌸', '⭐', '🐶', '🐱', '🦄', '🍓', '🚗', '🎈', '👑', '🌈'];
+              const stampIcon = icons[(currentBookIndex - 1) % icons.length];
+              slotsHtml += `
+                <div class="bg-white/90 border-2 border-dashed border-amber-300 rounded-2xl h-22 sm:h-24 flex flex-col items-center justify-center p-2 relative shadow-inner">
+                  <span class="absolute top-1.5 left-2 font-bold text-[10px] text-amber-500">${currentBookIndex}</span>
+                  <div class="animate-stamp text-center">
+                    <span class="text-2xl sm:text-3xl">${stampIcon}</span>
+                    <p class="text-[8px] sm:text-[9px] font-bold text-amber-600">たいへんできました</p>
+                  </div>
+                </div>
+              `;
+            }
           } else {
-            slot.innerHTML = `
-              <span class="absolute top-1.5 left-2 font-bold text-[10px] text-amber-500">${i}</span>
-              <div class="animate-stamp text-center">
-                <span class="text-3xl">🌸</span>
-                <p class="text-[9px] font-bold text-amber-600">たいへんよくできました</p>
+            slotsHtml += `
+              <div class="bg-white/60 border-2 border-dashed border-amber-200 rounded-2xl h-22 sm:h-24 flex flex-col items-center justify-center p-2 relative shadow-inner">
+                <span class="absolute top-1.5 left-2 font-bold text-[10px] text-amber-300">${currentBookIndex}</span>
+                <div class="text-center opacity-30">
+                  <span class="text-2xl text-amber-400 font-bold">★</span>
+                </div>
               </div>
             `;
           }
+        }
+        slotsHtml += '</div>';
+
+        // Reward Box for this sheet
+        const curRewardText = rewardSettings[selectedReader] || 'ごほうび未設定';
+        const sheetCompleted = (totalReadCount >= endBookNum);
+        const stampsInThisSheet = Math.min(10, Math.max(0, totalReadCount - sheetIdx * 10));
+        const neededInThisSheet = 10 - stampsInThisSheet;
+
+        let rewardBadgeHtml = '';
+        if (sheetCompleted) {
+          rewardBadgeHtml = `<div class="inline-block bg-amber-400 text-slate-900 font-black text-xs px-3 py-1 rounded-full shadow"><i class="fa-solid fa-crown mr-1"></i> 達成！ごほうびゲット！</div>`;
         } else {
-          slot.innerHTML = `
-            <span class="absolute top-1.5 left-2 font-bold text-[10px] text-amber-300">${i}</span>
-            <div class="text-center opacity-30">
-              <span class="text-2xl text-amber-400 font-bold">★</span>
+          rewardBadgeHtml = `<div class="inline-block bg-slate-100 text-slate-600 font-bold text-[11px] px-3 py-1 rounded-full">あと <span class="text-amber-600 font-bold">${neededInThisSheet}</span> 冊でゲット！</div>`;
+        }
+
+        let rewardBoxHtml = `
+          <div class="bg-white rounded-2xl border-2 border-amber-400 p-3.5 max-w-md mx-auto text-center space-y-1.5 shadow-md">
+            <div class="text-xs font-bold text-amber-600 flex items-center justify-center gap-1">
+              <i class="fa-solid fa-gift text-base"></i> ${endBookNum}冊達成のごほうびチケット
+            </div>
+            <p class="text-sm sm:text-base font-extrabold text-slate-800">${escapeHtml(curRewardText)}</p>
+            ${rewardBadgeHtml}
+          </div>
+        `;
+
+        // Special 100-book Grand Reward Banner
+        let superRewardHtml = '';
+        if (isSuperRewardSheet && sheetCompleted) {
+          superRewardHtml = `
+            <div class="bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-400 border-2 border-amber-500 rounded-2xl p-4 text-center shadow-lg space-y-1 text-slate-900 animate-pulse">
+              <p class="font-black text-sm">👑 かんぜんコンプリート！ 👑</p>
+              <p class="font-extrabold text-base">${sheetNumber * 100}冊達成！スペシャル大ごほうび！🎉</p>
             </div>
           `;
         }
+
+        sheetCard.innerHTML = headerHtml + slotsHtml + rewardBoxHtml + superRewardHtml;
+        container.appendChild(sheetCard);
       }
     }
 
@@ -838,6 +986,171 @@
       saveRewardsToStorage();
       renderStampSheet();
       alert(`${reader} さんのごほうびを設定しました！`);
+    }
+
+    /* ==========================================================================
+       Janken Game & Extra Features Engine (Interactive Multi-step Flow)
+       ========================================================================== */
+    function resetJankenUI() {
+      isJankenInProgress = false;
+      document.getElementById('janken-status').innerText = "「しょうぶする？」";
+      document.getElementById('janken-sub-text').innerText = "「スタート」ボタンを押して勝負をはじめよう！";
+      document.getElementById('janken-user-hand').innerText = "❓";
+      document.getElementById('janken-cpu-hand').innerText = "❓";
+      document.getElementById('janken-result-text').innerText = "";
+      document.getElementById('janken-start-btn').classList.remove('hidden');
+      document.getElementById('janken-hand-btns').classList.add('hidden');
+    }
+
+    function startJankenFlow() {
+      if (isJankenInProgress) return;
+      isJankenInProgress = true;
+
+      const statusEl = document.getElementById('janken-status');
+      const subTextEl = document.getElementById('janken-sub-text');
+      const startBtn = document.getElementById('janken-start-btn');
+      const handBtns = document.getElementById('janken-hand-btns');
+      const userHandEl = document.getElementById('janken-user-hand');
+      const cpuHandEl = document.getElementById('janken-cpu-hand');
+      const resultEl = document.getElementById('janken-result-text');
+
+      userHandEl.innerText = "❓";
+      cpuHandEl.innerText = "✊";
+      resultEl.innerText = "";
+      startBtn.classList.add('hidden');
+
+      // Step 1: 最初はグー！
+      statusEl.innerText = "「さいしょは グー！ ✊」";
+      subTextEl.innerText = "パパデミーが準備中...";
+
+      setTimeout(() => {
+        // Step 2: じゃんけんぽん！出し手を選択させる
+        statusEl.innerText = "「じゃん・けん・・・ ぽん！」";
+        subTextEl.innerText = "したの ボタンから 出す手を えらんでね！";
+        handBtns.classList.remove('hidden');
+      }, 1200);
+    }
+
+    function selectUserHand(userHand) {
+      const handBtns = document.getElementById('janken-hand-btns');
+      handBtns.classList.add('hidden');
+
+      const statusEl = document.getElementById('janken-status');
+      const subTextEl = document.getElementById('janken-sub-text');
+      const userHandEl = document.getElementById('janken-user-hand');
+      const cpuHandEl = document.getElementById('janken-cpu-hand');
+      const resultEl = document.getElementById('janken-result-text');
+
+      // Step 3: きみは〇〇をだしたね
+      userHandEl.innerText = userHand;
+      const handNames = { '✊': 'グー', '✌️': 'チョキ', '✋': 'パー' };
+      statusEl.innerText = `きみは 【${handNames[userHand]} ${userHand}】 をだしたね！`;
+      subTextEl.innerText = "パパデミーの手は・・・？";
+
+      // CPU Shuffle Animation
+      let shuffleCount = 0;
+      const hands = ['✊', '✌️', '✋'];
+      const interval = setInterval(() => {
+        cpuHandEl.innerText = hands[shuffleCount % 3];
+        shuffleCount++;
+      }, 100);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        
+        // Step 4: 結果発表！
+        const cpuHand = hands[Math.floor(Math.random() * hands.length)];
+        cpuHandEl.innerText = cpuHand;
+
+        if (userHand === cpuHand) {
+          statusEl.innerText = "あいこで・・・ ショウ！ 😐";
+          resultEl.innerText = "おたがい 同じ手！ もう一回勝負だ！";
+          resultEl.className = "text-base font-black text-amber-600 min-h-[28px] flex items-center justify-center animate-bounce";
+        } else if (
+          (userHand === '✊' && cpuHand === '✌️') ||
+          (userHand === '✌️' && cpuHand === '✋') ||
+          (userHand === '✋' && cpuHand === '✊')
+        ) {
+          jankenWinStreak++;
+          statusEl.innerText = "やったー！ きみの かち！ 🎉";
+          resultEl.innerText = "すごーい！ パパデミーに 勝ったよ！";
+          resultEl.className = "text-base font-black text-emerald-600 min-h-[28px] flex items-center justify-center animate-bounce";
+        } else {
+          jankenWinStreak = 0;
+          statusEl.innerText = "あちゃ〜！ 負けたー！ 😭";
+          resultEl.innerText = "パパデミーの勝ち！ つぎは負けないぞ〜！";
+          resultEl.className = "text-base font-black text-rose-600 min-h-[28px] flex items-center justify-center animate-bounce";
+        }
+
+        localStorage.setItem(JANKEN_KEY, jankenWinStreak.toString());
+        updateJankenUI();
+
+        // Restart option after 2.5 sec
+        setTimeout(() => {
+          subTextEl.innerText = "「もう一回遊ぶ」ボタンを押してね！";
+          document.getElementById('janken-start-btn').innerText = "もう一回 勝負する！";
+          document.getElementById('janken-start-btn').classList.remove('hidden');
+          isJankenInProgress = false;
+        }, 1500);
+
+      }, 1200);
+    }
+
+    function updateJankenUI() {
+      const streakEl = document.getElementById('janken-streak');
+      if (streakEl) streakEl.innerText = jankenWinStreak;
+    }
+
+    function drawReadingOmikuji() {
+      const omikujiList = [
+        {
+          fortune: '超大吉 👑✨',
+          genre: '🌟 ラッキー本: 冒険・まほうの絵本',
+          comment: 'すばらしい運気！きょう読む絵本の中には、きみをワクワクさせる大冒険や素敵な魔法が隠れているよ！ページをめくる手が止まらなくなっちゃうかも！？'
+        },
+        {
+          fortune: '大吉 🌟',
+          genre: '🦁 ラッキー本: どうぶつ・生きものの本',
+          comment: '今日はとってもハッピーな一日！可愛い動物たちが大活躍するお話を読むと、笑顔がいっぱいあふれて、もっと仲良くなれる最高のひらめきがもらえるよ！'
+        },
+        {
+          fortune: '吉 ✨',
+          genre: '🚀 ラッキー本: 乗り物・科学の図鑑',
+          comment: '物知りパワーがぐんぐん高まる日！「なんで？どうして？」と思ったことを図鑑や絵本で調べてみよう！パパデミーもびっくりする博士になれるかも！'
+        },
+        {
+          fortune: '中吉 🍀',
+          genre: '🤣 ラッキー本: ユーモア・爆笑絵本',
+          comment: 'おなかをかかえて笑えるユーモア絵本がラッキーを運んでくるよ！家族やみんなと一緒に読んで、思いっきり笑うと運気が一気に最高潮へ！'
+        },
+        {
+          fortune: '小吉 😊',
+          genre: '🌙 ラッキー本: ほっこり・おやすみ絵本',
+          comment: '心がポカポカ温まる優しい絵本がおすすめ。お布団に入りながらゆっくり読むと、とっても良い夢が見られて明日は元気いっぱいに過ごせるよ！'
+        },
+        {
+          fortune: 'パパデミー賞 🎉',
+          genre: '🎨 ラッキー本: 自分が一番大好きな絵本',
+          comment: 'おめでとう！パパデミーが特別賞をあげるよ！今日は昔読んだ「一番大好きな絵本」をもう一度開いてみよう。新しい素敵な発見が必ず見つかるよ！'
+        }
+      ];
+
+      const selected = omikujiList[Math.floor(Math.random() * omikujiList.length)];
+
+      const box = document.getElementById('omikuji-result-box');
+      const fEl = document.getElementById('omikuji-fortune');
+      const gEl = document.getElementById('omikuji-genre');
+      const cEl = document.getElementById('omikuji-comment');
+
+      if (box && fEl && gEl && cEl) {
+        box.classList.add('hidden');
+        setTimeout(() => {
+          fEl.innerText = selected.fortune;
+          gEl.innerText = selected.genre;
+          cEl.innerText = selected.comment;
+          box.classList.remove('hidden');
+        }, 100);
+      }
     }
 
     /* ==========================================================================
@@ -1204,7 +1517,7 @@
     }
 
     /* ==========================================================================
-       Backup & Data Import / Export Handlers
+       Backup & Data Import / Export Handlers (iOS Supported)
        ========================================================================== */
     function openBackupModal() {
       renderReaderOptions();
@@ -1215,12 +1528,16 @@
       document.getElementById('modal-backup')?.classList.add('hidden');
     }
 
-    function exportDataJSON() {
-      const payload = {
+    function getBackupPayload() {
+      return {
         books: booksData,
         readers: readerList,
         rewards: rewardSettings
       };
+    }
+
+    function exportDataJSON() {
+      const payload = getBackupPayload();
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
@@ -1228,6 +1545,63 @@
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
+    }
+
+    function copyDataJSONToClipboard() {
+      const jsonStr = JSON.stringify(getBackupPayload(), null, 2);
+      const textArea = document.getElementById('backup-text-area');
+      if (textArea) textArea.value = jsonStr;
+
+      navigator.clipboard.writeText(jsonStr).then(() => {
+        alert('バックアップテキストをクリップボードにコピーしました！メモ帳などに貼り付けて保存できます。');
+      }).catch(() => {
+        alert('下のテキストボックス内の文字列をすべてコピーして保存してください。');
+      });
+    }
+
+    function processImportData(parsedData) {
+      if (Array.isArray(parsedData)) {
+        if (confirm(`現在データ (${booksData.length}件) をインポートデータ (${parsedData.length}件) に上書き復元しますか？`)) {
+          booksData = parsedData;
+          saveBooksToStorage();
+          renderBookshelf();
+          renderStampSheet();
+          closeBackupModal();
+          alert('データの復元が完了しました！');
+        }
+      } else if (parsedData && parsedData.books) {
+        if (confirm(`データ（絵本 ${parsedData.books.length}冊）を復元しますか？`)) {
+          booksData = parsedData.books || [];
+          if (parsedData.readers) readerList = parsedData.readers;
+          if (parsedData.rewards) rewardSettings = parsedData.rewards;
+
+          saveBooksToStorage();
+          saveReadersToStorage();
+          saveRewardsToStorage();
+
+          renderReaderOptions();
+          renderBookshelf();
+          renderStampSheet();
+          closeBackupModal();
+          alert('データの復元が完了しました！');
+        }
+      } else {
+        alert('有効なバックアップデータ形式ではありません。');
+      }
+    }
+
+    function importDataFromText() {
+      const text = document.getElementById('import-text-area')?.value.trim();
+      if (!text) {
+        alert('貼り付けエリアにJSONテキストを入力してください。');
+        return;
+      }
+      try {
+        const parsed = JSON.parse(text);
+        processImportData(parsed);
+      } catch (e) {
+        alert('JSONテキストの読み込みに失敗しました。正しいテキストか確認してください。');
+      }
     }
 
     function importDataJSON(event) {
@@ -1238,36 +1612,7 @@
       reader.onload = function(e) {
         try {
           const imported = JSON.parse(e.target.result);
-          if (Array.isArray(imported)) {
-            // Old version backup array format
-            if (confirm(`現在データ (${booksData.length}件) をインポートデータ (${imported.length}件) に上書き復元しますか？`)) {
-              booksData = imported;
-              saveBooksToStorage();
-              renderBookshelf();
-              renderStampSheet();
-              closeBackupModal();
-              alert('データの復元が完了しました！');
-            }
-          } else if (imported && imported.books) {
-            // New version backup object format
-            if (confirm(`データ（絵本 ${imported.books.length}冊）を復元しますか？`)) {
-              booksData = imported.books || [];
-              if (imported.readers) readerList = imported.readers;
-              if (imported.rewards) rewardSettings = imported.rewards;
-
-              saveBooksToStorage();
-              saveReadersToStorage();
-              saveRewardsToStorage();
-
-              renderReaderOptions();
-              renderBookshelf();
-              renderStampSheet();
-              closeBackupModal();
-              alert('データの復元が完了しました！');
-            }
-          } else {
-            alert('有効なバックアップJSONファイルではありません。');
-          }
+          processImportData(imported);
         } catch (err) {
           alert('ファイルの読み込みに失敗しました。');
         }
